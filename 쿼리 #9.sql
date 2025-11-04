@@ -186,7 +186,7 @@ SELECT * FROM person;
 SELECT * FROM person LIMIT 2, 3; 
 
 -- 서브 쿼리 
--- 위치 : SELECT-FROM(COLUMN) 사이, WHERE 절, FROM 절(인라인 뷰)
+/* 위치 : SELECT-FROM(COLUMN) 사이 (스칼라 서브쿼리), WHERE 절(중첩 서브쿼리), FROM 절(인라인 뷰)*/
 
 -- 스칼라 값 (Scalar) one row, one column
 SELECT '홍길동';
