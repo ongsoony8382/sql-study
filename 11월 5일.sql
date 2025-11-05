@@ -209,3 +209,41 @@ WHERE emp_no BETWEEN 10001 AND 100000;
 EXPLAIN 
 SELECT * FROM employees 
 WHERE first_name = 'Aamer';
+
+EXPLAIN 
+SELECT * FROM employees 
+WHERE hire_date between '1987-10-01' AND '1987-11-11';
+
+EXPLAIN
+SELECT * FROM employees
+WHERE emp_no < 100001;
+
+-- 테이블 추가
+CREATE TABLE employee_name (
+	  emp_no INT NOT NULL
+	, first_name VARCHAR(14) NOT NULL
+	, last_name VARCHAR(16) NOT NULL 
+	, PRIMARY KEY (emp_no)
+	, FULLTEXT KEY fx_name(first_name, last_name) WITH PARSER ngram
+);
+
+-- 테이블에 레코드 추가
+INSERT INTO employee_name
+(emp_no, first_name, last_name)
+SELECT emp_no, first_name, last_name
+FROM employees;
+
+-- MATCH - AGAINST 명령어를 이용
+-- 조회시간: 78ms, 46ms, 31ms, 16ms
+EXPLAIN 
+ SELECT *
+   FROM employee_name
+  WHERE MATCH(first_name, last_name) 
+AGAINST ('Facello' IN BOOLEAN MODE);
+
+EXPLAIN
+SELECT emp_no, title, from_date
+FROM titles 
+WHERE title = 'Manager';
+
+
