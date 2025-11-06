@@ -344,3 +344,23 @@ from (SELECT e.emp_no
                      WHERE gender = 'M'
                      AND emp_no > 300000) e
                ) s;
+
+SELECT count(1) FROM employees
+                     WHERE gender = 'M'
+                     AND emp_no > 300000;
+
+/*5.1.4 대량의 데이터를 가져와 조인하는 나쁜 sql문*/
+
+-- original
+SELECT DISTINCT de.dept_no
+FROM dept_manager dm
+INNER JOIN dept_emp de
+ON de.dept_no = dm.dept_no
+ORDER BY de.dept_no;
+
+-- 24
+select count(1) from dept_manager;
+-- 331,603
+select count(1) from dept_emp;
+
+select distinct dept_no from dept_manager;
