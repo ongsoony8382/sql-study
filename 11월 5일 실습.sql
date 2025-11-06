@@ -242,3 +242,43 @@ select count(1) from dept_emp where from_date >= '2002-03-01';
 -- 9rows
 select count(1) from departments;
 
+EXPLAIN
+SELECT straight_join DE.emp_no, D.dept_no
+FROM departments D
+         JOIN dept_emp DE
+              ON D.dept_no = DE.dept_no
+WHERE DE.from_date >= '2002-03-01';
+
+/* 4.3.2 사원번호가 450,000보다 크고 최대 연봉이 100,000보다 큰 데이터를 찾아 출력하시오.
+   즉, 사원 번호가 450,000번을 초과하면서 그동안 받은 연봉 중 한 번이라도 100,000 달러를
+   초과한 적이 있는 사원의 정보를 출력.
+   표시 컬럼: 사원 번호, 이름, 성
+   3,155 rows*/
+
+  EXPLAIN
+   select e.emp_no, e.last_name, e.first_name
+   from employees e
+   join salaries s
+   on e.emp_no = s.emp_no
+   where e.emp_no > 450000
+   GROUP BY e.emp_no
+   having MAX(s.salary) > 100000;
+
+/* 'A'출입문으로 출입한 사원이 총 몇 명인지 구하시오 */
+
+
+select count(distinct emp_no)
+from emp_access_logs
+where door = 'A';
+
+/* -- 5.1.1 */
+EXPLAIN
+SELECT E.emp_no, ROUND(AVG(salary)), ROUND(MAX(salary)), ROUND(MIN(salary))
+FROM employees E
+INNER JOIN salaries S
+ON S.emp_no = E.emp_no
+WHERE E.emp_no BETWEEN 10001 AND 10100
+GROUP BY S.emp_no;
+
+
+
