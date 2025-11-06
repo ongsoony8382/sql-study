@@ -236,14 +236,18 @@ FROM departments D
 WHERE DE.from_date >= '2002-03-01';
 
 -- 331,603rows
-select count(1) from dept_emp;
+SELECT COUNT(1)
+FROM dept_emp;
 -- 1,341 rows
-select count(1) from dept_emp where from_date >= '2002-03-01';
+SELECT COUNT(1)
+FROM dept_emp
+WHERE from_date >= '2002-03-01';
 -- 9rows
-select count(1) from departments;
+SELECT COUNT(1)
+FROM departments;
 
 EXPLAIN
-SELECT straight_join DE.emp_no, D.dept_no
+SELECT STRAIGHT_JOIN DE.emp_no, D.dept_no
 FROM departments D
          JOIN dept_emp DE
               ON D.dept_no = DE.dept_no
@@ -255,30 +259,88 @@ WHERE DE.from_date >= '2002-03-01';
    표시 컬럼: 사원 번호, 이름, 성
    3,155 rows*/
 
-  EXPLAIN
-   select e.emp_no, e.last_name, e.first_name
-   from employees e
-   join salaries s
-   on e.emp_no = s.emp_no
-   where e.emp_no > 450000
-   GROUP BY e.emp_no
-   having MAX(s.salary) > 100000;
+EXPLAIN
+SELECT e.emp_no, e.last_name, e.first_name
+FROM employees e
+         JOIN salaries s
+              ON e.emp_no = s.emp_no
+WHERE e.emp_no > 450000
+GROUP BY e.emp_no
+HAVING MAX(s.salary) > 100000;
 
 /* 'A'출입문으로 출입한 사원이 총 몇 명인지 구하시오 */
 
 
-select count(distinct emp_no)
-from emp_access_logs
-where door = 'A';
+SELECT COUNT(DISTINCT emp_no)
+FROM emp_access_logs
+WHERE door = 'A';
 
 /* -- 5.1.1 */
+
+-- JOIN
 EXPLAIN
-SELECT E.emp_no, ROUND(AVG(salary)), ROUND(MAX(salary)), ROUND(MIN(salary))
+SELECT E.emp_no, E.first_name, E.last_name, ROUND(AVG(salary)), ROUND(MAX(salary)), ROUND(MIN(salary))
 FROM employees E
-INNER JOIN salaries S
-ON S.emp_no = E.emp_no
+         INNER JOIN salaries S
+                    ON S.emp_no = E.emp_no
 WHERE E.emp_no BETWEEN 10001 AND 10100
 GROUP BY S.emp_no;
 
+-- STRAIGHT
+EXPLAIN
+SELECT STRAIGHT_JOIN E.emp_no,
+                     E.first_name,
+                     E.last_name,
+                     ROUND(AVG(salary)),
+                     ROUND(MAX(salary)),
+                     ROUND(MIN(salary))
+FROM salaries S
+         INNER JOIN employees E
+                    ON S.emp_no = E.emp_no
+WHERE E.emp_no >= 10001
+  AND E.emp_no < 10101
+GROUP BY S.emp_no;
 
+-- 5.1.2 비효율적인 페이징 수행
 
+-- original
+SELECT E.emp_no, E.first_name, E.last_name, E.hire_date
+FROM employees E
+         INNER JOIN salaries S
+                    ON S.emp_no = E.emp_no
+WHERE E.emp_no BETWEEN 10001 AND 50000
+GROUP BY E.emp_no
+ORDER BY SUM(S.salary) DESC
+LIMIT 150, 10;
+
+--
+EXPLAIN
+SELECT E.emp_no, E.first_name, E.last_name, E.hire_date
+FROM employees e
+         INNER JOIN (SELECT emp_no
+                     FROM salaries
+                     WHERE e.emp_no >= 10001
+                       AND e.emp_no <= 50000
+                     GROUP BY e.emp_no
+                     ORDER BY SUM(salary) DESC
+                     LIMIT 150, 10) s
+                    ON s.emp_no = e.emp_no;
+
+/* 필요 이상으로 많은 정보를 가져오는 나쁜 sql문
+*/
+-- original
+SELECT count(s.emp_no) as cnt
+from (SELECT e.emp_no, dm.dept_no
+      FROM (SELECT * FROM employees
+                     WHERE gender = 'M'
+                     AND emp_no > 300000) e
+               LEFT JOIN dept_manager dm
+                         ON dm.emp_no = e.emp_no) s;
+
+EXPLAIN
+SELECT count(s.emp_no) as cnt
+from (SELECT e.emp_no
+      FROM (SELECT emp_no FROM employees
+                     WHERE gender = 'M'
+                     AND emp_no > 300000) e
+               ) s;
