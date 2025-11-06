@@ -87,7 +87,7 @@ FROM employees
 WHERE last_name = 'Baba' AND gender = 'F'
    OR last_name = 'Baba' AND gender = 'M';
 
--- 인덱스를 사용하지 못하는 쿼리 (ALL)
+-- 인덱스를 활용하지 못하는 쿼리 (ALL)
 EXPLAIN
 SELECT *
 FROM employees
@@ -204,13 +204,14 @@ WHERE hire_date BETWEEN STR_TO_DATE('1994-01-01', '%Y-%m-%d')
 -- range 인덱스 강제 사용
 EXPLAIN
 SELECT last_name, first_name
-FROM employees FORCE INDEX(I_입사일자)
+FROM employees FORCE INDEX (I_입사일자)
 WHERE hire_date BETWEEN STR_TO_DATE('1994-01-01', '%Y-%m-%d')
           AND STR_TO_DATE('2000-12-31', '%Y-%m-%d');
 
 -- 데이터가 엄청 많으면 random access(range)보다 sequence access(all)가 빠를 수도 있음
 -- 300,024 rows
-select count(1) from employees;
+SELECT COUNT(1)
+FROM employees;
 -- 48,875 rows
 EXPLAIN
 SELECT COUNT(1)
@@ -218,8 +219,26 @@ FROM employees
 WHERE hire_date BETWEEN STR_TO_DATE('1994-01-01', '%Y-%m-%d')
           AND STR_TO_DATE('2000-12-31', '%Y-%m-%d');
 
-select 48875/300024 * 100; -- 16.29%
+SELECT 48875 / 300024 * 100; -- 16.29%
 
 SELECT last_name, first_name
-from employees
-where year(hire_date) between '1994' and '2000';
+FROM employees
+WHERE YEAR(hire_date) BETWEEN '1994' AND '2000';
+
+/* 부서사원 테이블 (dept_emp)과 부서(departments) 테이블을 조인하여 부서 시작일자가
+   '2002-03-01' 부터인 사원의 데이터를 조회하는 쿼리. 표시 컬럼은 사원 번호, 부서번호 */
+
+EXPLAIN
+SELECT DE.emp_no, D.dept_no
+FROM departments D
+         JOIN dept_emp DE
+              ON D.dept_no = DE.dept_no
+WHERE DE.from_date >= '2002-03-01';
+
+-- 331,603rows
+select count(1) from dept_emp;
+-- 1,341 rows
+select count(1) from dept_emp where from_date >= '2002-03-01';
+-- 9rows
+select count(1) from departments;
+
