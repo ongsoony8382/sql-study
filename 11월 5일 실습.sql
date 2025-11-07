@@ -270,7 +270,6 @@ HAVING MAX(s.salary) > 100000;
 
 /* 'A'출입문으로 출입한 사원이 총 몇 명인지 구하시오 */
 
-
 SELECT COUNT(DISTINCT emp_no)
 FROM emp_access_logs
 WHERE door = 'A';
