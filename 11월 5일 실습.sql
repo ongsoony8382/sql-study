@@ -200,7 +200,6 @@ FROM employees
 WHERE hire_date BETWEEN STR_TO_DATE('1994-01-01', '%Y-%m-%d')
           AND STR_TO_DATE('2000-12-31', '%Y-%m-%d');
 
-
 -- range 인덱스 강제 사용
 EXPLAIN
 SELECT last_name, first_name
